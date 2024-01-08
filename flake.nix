@@ -34,6 +34,9 @@
             jq
             wget
             nixpkgs-fmt
+            hey
+            entr
+            graphviz
           ];
 
           # A hook run every time you enter the environment

@@ -3,6 +3,14 @@ from django.contrib.auth.models import User, Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+class Approval(models.Model):
+    returning_citizen = models.ForeignKey('ReturningCitizen', on_delete=models.CASCADE)
+    parole_officer = models.ForeignKey('ParoleOfficer', on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.returning_citizen.first_name + " " + self.returning_citizen.last_name + " - " + self.parole_officer.user.username + " - " + str(self.approved)
+
 class CareTeam(models.Model):
     name = models.CharField(max_length=100)
     organization = models.TextField(null=True, blank=True)
@@ -32,11 +40,44 @@ def create_mentor_group(sender, instance, created, **kwargs):
         group, created = Group.objects.get_or_create(name='Mentor Role')
         instance.user.groups.add(group)
 
+class Need(models.Model):
+    need = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    slug = models.SlugField(max_length=255, null=True)
+
+    def __str__(self):
+        return self.need
+
+
+class Goal(models.Model):
+    goal = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    slug = models.SlugField(max_length=255, null=True)
+
+    def __str__(self):
+        return self.goal
+
+
+class Address(models.Model):
+    address_1 = models.CharField(max_length=128)
+    address_2 = models.CharField(max_length=128, null=True, blank=True)
+    city = models.CharField(max_length=64)
+    state = models.CharField(max_length=2)
+    zip_code = models.CharField(max_length=5)
+
+
+
 class ReturningCitizen(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     care_team = models.OneToOneField(CareTeam, on_delete=models.CASCADE, blank=True, null=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    needs = models.ManyToManyField(Need, blank=True)
+    goals = models.ManyToManyField(Goal, blank=True)
+    address = models.OneToOneField(Address, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.first_name + " " + self.last_name
 
 
     def save(self, *args, **kwargs):
@@ -46,8 +87,15 @@ class ReturningCitizen(models.Model):
             self.care_team = care_team
         super().save(*args, **kwargs)
 
+
 @receiver(post_save, sender=ReturningCitizen)
 def create_returning_citizen_group(sender, instance, created, **kwargs):
     if created:
         group, created = Group.objects.get_or_create(name='Returning Citizen Role')
         instance.user.groups.add(group)
+
+
+@receiver(post_save, sender=Approval)
+def add_parole_officer_to_care_team(sender, instance, created, **kwargs):
+    if created and instance.approved:
+        instance.returning_citizen.care_team.parole_officers.add(instance.parole_officer)
