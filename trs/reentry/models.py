@@ -9,7 +9,7 @@ class Approval(models.Model):
     approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.returning_citizen.first_name + " " + self.returning_citizen.last_name + " - " + self.parole_officer.user.username + " - " + str(self.approved)
+        return self.returning_citizen.first_name + " " + self.returning_citizen.last_name + " - " + self.parole_officer.user.username + " - Approved:  " + str(self.approved)
 
 class CareTeam(models.Model):
     name = models.CharField(max_length=100)
