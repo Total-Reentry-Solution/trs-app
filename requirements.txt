@@ -1,5 +1,6 @@
 annotated-types==0.6.0
 asgiref==3.7.2
+black==23.12.1
 click==8.1.7
 coverage==7.4.0
 distlib==0.3.7
@@ -9,7 +10,9 @@ django-ninja==1.1.0
 filelock==3.12.4
 gunicorn==21.2.0
 h11==0.14.0
+mypy-extensions==1.0.0
 packaging==23.2
+pathspec==0.12.1
 platformdirs==3.10.0
 pydantic==2.5.3
 pydantic_core==2.14.6
