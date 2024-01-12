@@ -1,0 +1,36 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main  # Change this to your main branch name
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # - name: Set up Nix environment
+    #   run: nix develop
+
+    - name: Set up Python environment
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+
+    - name: Create and activate virtual environment
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        # You might need additional steps based on your project dependencies
+
+    - name: Run Django tests
+      working-directory: trs
+      run: python manage.py test
