@@ -18,6 +18,8 @@ jobs:
 
     - name: Set up Penvironment
       uses: DeterminateSystems/nix-installer-action@main
+  
+    - name: Set up Nix environment
       run: nix develop
 
     - name: Create and activate virtual environment
