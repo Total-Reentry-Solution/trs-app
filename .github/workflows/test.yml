@@ -16,10 +16,8 @@ jobs:
     # - name: Set up Nix environment
     #   run: nix develop
 
-    - name: Set up Python environment
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.11.6
+      - uses: DeterminateSystems/nix-installer-action@main
+      - run: nix develop
 
     - name: Create and activate virtual environment
       run: |
