@@ -16,8 +16,9 @@ jobs:
     # - name: Set up Nix environment
     #   run: nix develop
 
-      - uses: DeterminateSystems/nix-installer-action@main
-      - run: nix develop
+    - name: Set up Penvironment
+      uses: DeterminateSystems/nix-installer-action@main
+      run: nix develop
 
     - name: Create and activate virtual environment
       run: |
