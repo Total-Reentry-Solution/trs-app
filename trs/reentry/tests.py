@@ -128,7 +128,7 @@ class AuthIntegrationTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
         # Check if the user is now logged in
-        #self.assertTrue(response.context["user"].is_authenticated)
+        self.assertIn('_auth_user_id', self.client.session)
 
     def test_logout(self):
         # Log in the user before testing logout
