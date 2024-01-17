@@ -13,6 +13,9 @@ from .models import (
     Approval,
 )
 
+from django.urls import reverse
+
+
 
 class ModelTestCase(TestCase):
     def setUp(self):
@@ -141,3 +144,51 @@ class AuthIntegrationTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
         # Check if the user is now logged out
         self.assertNotIn('_auth_user_id', self.client.session)
+
+class HomeViewTests(TestCase):
+    def setUp(self):
+        # Create test users and groups
+        self.user_returning_citizen = User.objects.create_user(username='rc_user', password='testpass')
+        self.user_parole_officer = User.objects.create_user(username='po_user', password='testpass')
+        self.user_mentor = User.objects.create_user(username='mentor_user', password='testpass')
+
+        self.group_returning_citizen = Group.objects.create(name='Returning Citizen Role')
+        self.group_parole_officer = Group.objects.create(name='Parole Officer Role')
+        self.group_mentor = Group.objects.create(name='Mentor Role')
+
+        self.user_returning_citizen.groups.add(self.group_returning_citizen)
+        self.user_parole_officer.groups.add(self.group_parole_officer)
+        self.user_mentor.groups.add(self.group_mentor)
+
+        # Create test model instances
+        self.returning_citizen = ReturningCitizen.objects.create(user=self.user_returning_citizen)
+        self.parole_officer = ParoleOfficer.objects.create(user=self.user_parole_officer)
+        self.mentor = Mentor.objects.create(user=self.user_mentor)
+
+    def test_authenticated_user_with_returning_citizen_role(self):
+        self.client.login(username='rc_user', password='testpass')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertContains(response, 'Welcome')
+        self.assertContains(response, 'Returning Citizen')
+
+    def test_authenticated_user_with_parole_officer_role(self):
+        self.client.login(username='po_user', password='testpass')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertContains(response, 'Welcome')
+        self.assertContains(response, 'Parole Officer')
+
+    def test_authenticated_user_with_mentor_role(self):
+        self.client.login(username='mentor_user', password='testpass')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertContains(response, 'Welcome')
+        self.assertContains(response, 'Mentor')
+
+    def test_unauthenticated_user(self):
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 302)  # Redirect to login page
