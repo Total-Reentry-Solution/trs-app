@@ -22,6 +22,9 @@ class ParoleOfficer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     care_teams = models.ManyToManyField(CareTeam, related_name="parole_officers", blank=True)
     organization = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+
 
 @receiver(post_save, sender=ParoleOfficer)
 def create_parole_officer_group(sender, instance, created, **kwargs):
@@ -33,6 +36,9 @@ class Mentor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     care_teams = models.ManyToManyField(CareTeam, related_name="mentors", blank=True)
     organization = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+
 
 @receiver(post_save, sender=Mentor)
 def create_mentor_group(sender, instance, created, **kwargs):

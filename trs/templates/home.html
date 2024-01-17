@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
-
+{% load custom_filters %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
 <div class="container">
   {% if user.is_authenticated %}
-    <h2> Welcome {{ user.first_name }} {{user.last_name}}! </h2> 
-    <p> This is where your approved and pending care teams will appear </p>
+    {% if user|user_in_group:'Parole Officer Role' %}
+      {% include 'po_landing.html' %}
+    {% elif user|user_in_group:'Mentor Role' %}
+      {% include 'mentor_landing.html' %}
+    {% elif user|user_in_group:'Returning Citizen Role' %}
+      {% include 'rc_landing.html' %}
+    {% else %}
+      <p> Welcome to Total Reentry Solution</p>
+    {% endif %}    
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
       <button type="submit">Logout</button>
