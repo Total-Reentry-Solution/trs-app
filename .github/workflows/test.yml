@@ -16,8 +16,10 @@ jobs:
     # - name: Set up Nix environment
     #   run: nix develop
 
-    - name: Set up Penvironment
+    - name: Set up Python environment
       uses: DeterminateSystems/nix-installer-action@main
+    
+    - name: Set up cache for Nix
       uses: DeterminateSystems/magic-nix-cache-action@main
   
     - name: Set up Nix environment
