@@ -18,6 +18,7 @@ jobs:
 
     - name: Set up Penvironment
       uses: DeterminateSystems/nix-installer-action@main
+      uses: DeterminateSystems/magic-nix-cache-action@main
   
     - name: Set up Nix environment
       run: nix develop
