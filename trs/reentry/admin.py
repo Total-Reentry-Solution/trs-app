@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from reentry.models import ParoleOfficer, Mentor, CareTeam, ReturningCitizen, Approval, Need, Goal, Address
+from reentry.models import ParoleOfficer, Mentor, CareTeam, ReturningCitizen, Approval, Need, Goal, Address, Questionnaire, Question, UserResponse
 
 
 # Define an inline admin descriptor for mmodel
@@ -34,3 +34,7 @@ admin.site.register(User, UserAdmin)
 admin.site.register(Approval)
 admin.site.register(Need)
 admin.site.register(Goal)
+admin.site.register(Address)
+admin.site.register(Questionnaire)
+admin.site.register(Question)
+admin.site.register(UserResponse)

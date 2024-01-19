@@ -54,7 +54,7 @@ class Need(models.Model):
     def __str__(self):
         return self.need
 
-
+#possibly deprecated with Questionaire model and related models
 class Goal(models.Model):
     goal = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
@@ -62,6 +62,34 @@ class Goal(models.Model):
 
     def __str__(self):
         return self.goal
+
+
+class Questionnaire(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+class Question(models.Model):
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
+    text = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.text
+    class Meta:
+        ordering = ['order']
+
+class UserResponse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    response = models.TextField()
+
+    def __str__(self):
+        return f"{self.user.username}'s response to '{self.question.text}'"
+
 
 
 class Address(models.Model):

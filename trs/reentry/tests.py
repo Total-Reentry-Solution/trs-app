@@ -11,6 +11,9 @@ from .models import (
     Address,
     ReturningCitizen,
     Approval,
+    Questionnaire,
+    Question,
+    UserResponse,
 )
 
 from django.urls import reverse
@@ -38,6 +41,14 @@ class ModelTestCase(TestCase):
         # Create an Address
         self.address = Address.objects.create(
             address_1="123 Main St", city="Test City", state="CA", zip_code="12345"
+        )
+        self.questionnaire = Questionnaire.objects.create(title="Test Questionnaire", description="Description")
+        self.question = Question.objects.create(questionnaire=self.questionnaire, text="Test Question", order=1)
+        self.user_response = UserResponse.objects.create(
+            user=self.user,
+            questionnaire=self.questionnaire,
+            question=self.question,
+            response="testuser's response to 'Test Question'"
         )
 
     def test_care_team_model(self):
@@ -109,6 +120,16 @@ class ModelTestCase(TestCase):
                 user=approval.parole_officer.user
             ).exists()
         )
+    
+
+    def test_questionnaire_str(self):
+        self.assertEqual(str(self.questionnaire), "Test Questionnaire")
+
+    def test_question_str(self):
+        self.assertEqual(str(self.question), "Test Question")
+
+    def test_user_response_str(self):
+        self.assertEqual(str(self.user_response), "testuser's response to 'Test Question'")
 
 
 class AuthIntegrationTest(TestCase):
