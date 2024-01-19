@@ -63,10 +63,17 @@ class Goal(models.Model):
     def __str__(self):
         return self.goal
 
+class QuestionnaireCategory(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
 
 class Questionnaire(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
+    category = models.ForeignKey(QuestionnaireCategory, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -86,6 +93,9 @@ class UserResponse(models.Model):
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     response = models.TextField()
+
+    def category(self):
+        return self.questionnaire.questionnaire_category
 
     def __str__(self):
         return f"{self.user.username}'s response to '{self.question.text}'"
