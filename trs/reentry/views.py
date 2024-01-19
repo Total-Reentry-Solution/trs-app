@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import user_passes_test
-from reentry.models import ReturningCitizen, Mentor, ParoleOfficer
+from reentry.models import ReturningCitizen, Mentor, ParoleOfficer, Questionnaire, Question, UserResponse
+from reentry.forms import create_dynamic_questionnaire_form
 
 def get_model_for_group(user):
     # Define your group-to-model and template mapping here
@@ -37,3 +38,29 @@ def home(request):
         return render(request, "home.html", {'model_instance': model_instance, 'model_name': model_name})
     except group_mapping['model'].DoesNotExist:
         return HttpResponseForbidden(f"You do not have a {group_mapping['model'].__name__} profile.")
+
+def display_questionnaire(request, questionnaire_id):
+    questionnaire = Questionnaire.objects.get(pk=questionnaire_id)
+
+    # Create a dynamic form for the questionnaire
+    DynamicQuestionnaireForm = create_dynamic_questionnaire_form(questionnaire)
+
+    if request.method == 'POST':
+        form = DynamicQuestionnaireForm(request.POST)
+        if form.is_valid():
+            for question in questionnaire.question_set.all():
+                response_field_name = f"question_{question.id}"
+                user_response = UserResponse(
+                    user=request.user,  # Assuming you have a user associated with the response
+                    questionnaire=questionnaire,
+                    question=question,
+                    response=form.cleaned_data[response_field_name]
+                )
+                user_response.save()
+            
+            # Redirect to the next page or thank-you page
+            return redirect('home')
+    else:
+        form = DynamicQuestionnaireForm()
+
+    return render(request, 'display_questionnaire.html', {'form': form, 'questionnaire': questionnaire})
