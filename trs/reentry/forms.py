@@ -4,7 +4,7 @@ from .models import UserResponse, Question
 class UserResponseForm(forms.ModelForm):
     class Meta:
         model = UserResponse
-        fields = ['response']
+        fields = []
 
 def create_dynamic_questionnaire_form(questionnaire):
     """

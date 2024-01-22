@@ -16,6 +16,8 @@ from .models import (
     UserResponse,
 )
 
+from .forms import create_dynamic_questionnaire_form
+
 from django.urls import reverse
 
 
@@ -213,3 +215,59 @@ class HomeViewTests(TestCase):
     def test_unauthenticated_user(self):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 302)  # Redirect to login page
+
+
+class DynamicQuestionnaireFormTest(TestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        
+        # Create a questionnaire and questions for testing
+        self.questionnaire = Questionnaire.objects.create(title='Test Questionnaire')
+        self.question1 = Question.objects.create(questionnaire=self.questionnaire, text='Question 1', order=1)
+        self.question2 = Question.objects.create(questionnaire=self.questionnaire, text='Question 2', order=2)
+        
+        # Add the user to the 'Returning Citizen Role' group
+        Group.objects.create(name='Returning Citizen Role')
+        returning_citizen_role = Group.objects.get(name='Returning Citizen Role')
+        self.user.groups.add(returning_citizen_role)
+
+    def test_dynamic_questionnaire_form_submission(self):
+        # Log in the test user
+        self.client.login(username='testuser', password='testpassword')
+
+        # Create a dynamic form for the questionnaire
+        DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
+
+        # Prepare POST data with responses
+        post_data = {
+            f'question_{self.question1.id}': 'Answer to question 1',
+            f'question_{self.question2.id}': 'Answer to question 2',
+        }
+
+        # Submit the form
+        response = self.client.post(reverse('display_questionnaire', args=[self.questionnaire.id]), post_data)
+
+        # Check if the form submission is successful and redirects to 'home'
+        #self.assertRedirects(response, reverse('home'))
+
+        # Check if the UserResponse objects are created in the database
+        self.assertEqual(UserResponse.objects.count(), 2)
+
+        # You can add more assertions based on your specific requirements
+
+    def test_dynamic_questionnaire_form_display(self):
+        # Log in the test user
+        self.client.login(username='testuser', password='testpassword')
+
+        # Create a dynamic form for the questionnaire
+        DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
+
+        # Access the questionnaire display page
+        response = self.client.get(reverse('display_questionnaire', args=[self.questionnaire.id]))
+
+        # Check if the response status is 200 (OK)
+        self.assertEqual(response.status_code, 200)
+
+        # Check if the form is in the response context
+        self.assertIn('form', response.context)

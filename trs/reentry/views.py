@@ -1,6 +1,6 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponseForbidden
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from reentry.models import ReturningCitizen, Mentor, ParoleOfficer, Questionnaire, Question, UserResponse
 from reentry.forms import create_dynamic_questionnaire_form
 
@@ -23,6 +23,14 @@ def get_model_for_group(user):
 
     return None
 
+def has_returning_citizen_role(user):
+    """
+    Check if the user's groups include 'Returning Citizen Role'.
+    """
+    return 'Returning Citizen Role' in [group.name for group in user.groups.all()]
+
+returning_citizen_required = user_passes_test(has_returning_citizen_role, login_url=None)
+
 @user_passes_test(lambda u: get_model_for_group(u) is not None, login_url=None)
 def home(request):
     group_mapping = get_model_for_group(request.user)
@@ -39,6 +47,8 @@ def home(request):
     except group_mapping['model'].DoesNotExist:
         return HttpResponseForbidden(f"You do not have a {group_mapping['model'].__name__} profile.")
 
+@login_required
+@returning_citizen_required
 def display_questionnaire(request, questionnaire_id):
     questionnaire = Questionnaire.objects.get(pk=questionnaire_id)
 
