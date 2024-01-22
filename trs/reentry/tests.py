@@ -221,16 +221,38 @@ class DynamicQuestionnaireFormTest(TestCase):
     def setUp(self):
         # Create a test user
         self.user = User.objects.create_user(username='testuser', password='testpassword')
-        
+        self.user_rc = User.objects.create_user(username='testuser2', password='testpassword2')
+
         # Create a questionnaire and questions for testing
         self.questionnaire = Questionnaire.objects.create(title='Test Questionnaire')
         self.question1 = Question.objects.create(questionnaire=self.questionnaire, text='Question 1', order=1)
         self.question2 = Question.objects.create(questionnaire=self.questionnaire, text='Question 2', order=2)
         
         # Add the user to the 'Returning Citizen Role' group
-        Group.objects.create(name='Returning Citizen Role')
-        returning_citizen_role = Group.objects.get(name='Returning Citizen Role')
-        self.user.groups.add(returning_citizen_role)
+        returning_citizen_role, created = Group.objects.get_or_create(name='Returning Citizen Role')
+        mentor_role, created = Group.objects.get_or_create(name='Mentor Role')
+
+        self.user_rc.groups.add(returning_citizen_role)
+        self.user.groups.add(mentor_role)
+
+        # Create a ReturningCitizen instance for self.user_rc
+        self.returning_citizen_user_rc = ReturningCitizen.objects.create(
+            user=self.user_rc,
+            first_name='Value1',  # Adjust fields based on your model structure
+            last_name='Value2',
+        )
+        care_team = self.returning_citizen_user_rc.care_team
+
+        # Create a Mentor instance for self.user
+        self.mentor_user = Mentor.objects.create(
+            user=self.user,
+            last_name='Mentor Last Name',
+        )
+        self.mentor_user.care_teams.add(care_team.id)
+
+        # Get or create a CareTeam associated with the returning_citizen_user_rc
+        
+
 
     def test_dynamic_questionnaire_form_submission(self):
         # Log in the test user
@@ -241,6 +263,7 @@ class DynamicQuestionnaireFormTest(TestCase):
 
         # Prepare POST data with responses
         post_data = {
+            'care_team': self.returning_citizen_user_rc.care_team.id,
             f'question_{self.question1.id}': 'Answer to question 1',
             f'question_{self.question2.id}': 'Answer to question 2',
         }

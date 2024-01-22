@@ -93,6 +93,9 @@ class UserResponse(models.Model):
     questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     response = models.TextField()
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_by', null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def category(self):
         return self.questionnaire.questionnaire_category
