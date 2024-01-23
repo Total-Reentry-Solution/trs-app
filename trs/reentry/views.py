@@ -52,18 +52,26 @@ def get_mentor_care_teams(user):
     except Mentor.DoesNotExist:
         # Handle the case when the user is not a Mentor
         return {"error": "Not a Mentor"}
-    # print(mentor)
+
     # Retrieve the associated CareTeams
     care_teams = mentor.care_teams.all()
 
-    # Convert CareTeams data to a format suitable for JSON
-    care_teams_data = [{"name": team.name} for team in care_teams]
-    # print(care_teams_data)
+    # Retrieve and include the ReturningCitizen user's first and last name
+    care_teams_data = []
+    for team in care_teams:
+        # Assuming there is a ForeignKey relationship from CareTeam to ReturningCitizen
+        returning_citizen_user = team.returningcitizen if team.returningcitizen else None
+
+        care_team_info = {
+            "name": team.name,
+            "returning_citizen_name": f"{returning_citizen_user.first_name} {returning_citizen_user.last_name}" if returning_citizen_user else None
+        }
+
+        care_teams_data.append(care_team_info)
     # Return the CareTeams data as a dictionary
     return {"care_teams": care_teams_data}
 
-
-@login_required
+@login_required 
 @user_passes_test(lambda u: get_model_for_group(u) is not None, login_url=None)
 def home(request):
     group_mapping = get_model_for_group(request.user)
@@ -75,7 +83,7 @@ def home(request):
         if model_name == "mentor":
             # Call the function to get mentor care teams data
             mentor_care_teams_data = get_mentor_care_teams(request.user)
-
+            #print(mentor_care_teams_data)
             return render(
                 request,
                 "home.html",

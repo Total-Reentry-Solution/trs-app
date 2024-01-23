@@ -11,11 +11,11 @@
       <h2> Welcome {{ model_instance.first_name }} {{ model_instance.last_name }}! </h2> 
       <p> Here are the latest Mentor actions. </p>
       {% if model_name == 'mentor' %}
-        <h2>Your Care Teams</h2>
-        {% if mentor_care_teams_data.care_teams %}
+        <h2>Your Returning Citizens</h2>
+        {% if mentor_care_teams_data %}
           <ul>
-            {% for care_team in mentor_care_teams_data.care_teams %}
-              <li>{{ care_team.name }}</li>
+            {% for rc in mentor_care_teams_data.care_teams %}
+              <li>{{ rc.returning_citizen_name }}</li>
             {% endfor %}
           </ul>
         {% else %}
