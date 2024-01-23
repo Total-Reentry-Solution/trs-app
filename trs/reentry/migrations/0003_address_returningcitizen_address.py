@@ -5,26 +5,38 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('reentry', '0002_goal_need_returningcitizen_goals_and_more'),
+        ("reentry", "0002_goal_need_returningcitizen_goals_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Address',
+            name="Address",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('address_1', models.CharField(max_length=128)),
-                ('address_2', models.CharField(blank=True, max_length=128, null=True)),
-                ('city', models.CharField(max_length=64)),
-                ('state', models.CharField(max_length=2)),
-                ('zip_code', models.CharField(max_length=5)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("address_1", models.CharField(max_length=128)),
+                ("address_2", models.CharField(blank=True, max_length=128, null=True)),
+                ("city", models.CharField(max_length=64)),
+                ("state", models.CharField(max_length=2)),
+                ("zip_code", models.CharField(max_length=5)),
             ],
         ),
         migrations.AddField(
-            model_name='returningcitizen',
-            name='address',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='reentry.address'),
+            model_name="returningcitizen",
+            name="address",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="reentry.address",
+            ),
         ),
     ]

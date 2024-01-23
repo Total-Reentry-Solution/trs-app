@@ -21,12 +21,16 @@ from reentry import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("api/", api.urls),
-    #path('', include('reentry.urls')),
-    path('accounts/', include("django.contrib.auth.urls")),
-    path('', views.home, name='home'),
-    path('questionnaire/<int:questionnaire_id>/', views.display_questionnaire, name='display_questionnaire'),
+    # path('', include('reentry.urls')),
+    path("accounts/", include("django.contrib.auth.urls")),
+    path("", views.home, name="home"),
+    path(
+        "questionnaire/<int:questionnaire_id>/",
+        views.display_questionnaire,
+        name="display_questionnaire",
+    ),
 ]
 
 admin.site.site_header = "Total Reentry Solution Admin"

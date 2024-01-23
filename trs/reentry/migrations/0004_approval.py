@@ -5,19 +5,38 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('reentry', '0003_address_returningcitizen_address'),
+        ("reentry", "0003_address_returningcitizen_address"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Approval',
+            name="Approval",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('approved', models.BooleanField(default=False)),
-                ('parole_officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reentry.paroleofficer')),
-                ('returning_citizen', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reentry.returningcitizen')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("approved", models.BooleanField(default=False)),
+                (
+                    "parole_officer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="reentry.paroleofficer",
+                    ),
+                ),
+                (
+                    "returning_citizen",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="reentry.returningcitizen",
+                    ),
+                ),
             ],
         ),
     ]

@@ -21,7 +21,6 @@ from .forms import create_dynamic_questionnaire_form
 from django.urls import reverse
 
 
-
 class ModelTestCase(TestCase):
     def setUp(self):
         # Create a user for testing
@@ -44,13 +43,17 @@ class ModelTestCase(TestCase):
         self.address = Address.objects.create(
             address_1="123 Main St", city="Test City", state="CA", zip_code="12345"
         )
-        self.questionnaire = Questionnaire.objects.create(title="Test Questionnaire", description="Description")
-        self.question = Question.objects.create(questionnaire=self.questionnaire, text="Test Question", order=1)
+        self.questionnaire = Questionnaire.objects.create(
+            title="Test Questionnaire", description="Description"
+        )
+        self.question = Question.objects.create(
+            questionnaire=self.questionnaire, text="Test Question", order=1
+        )
         self.user_response = UserResponse.objects.create(
             user=self.user,
             questionnaire=self.questionnaire,
             question=self.question,
-            response="testuser's response to 'Test Question'"
+            response="testuser's response to 'Test Question'",
         )
 
     def test_care_team_model(self):
@@ -122,7 +125,6 @@ class ModelTestCase(TestCase):
                 user=approval.parole_officer.user
             ).exists()
         )
-    
 
     def test_questionnaire_str(self):
         self.assertEqual(str(self.questionnaire), "Test Questionnaire")
@@ -131,7 +133,9 @@ class ModelTestCase(TestCase):
         self.assertEqual(str(self.question), "Test Question")
 
     def test_user_response_str(self):
-        self.assertEqual(str(self.user_response), "testuser's response to 'Test Question'")
+        self.assertEqual(
+            str(self.user_response), "testuser's response to 'Test Question'"
+        )
 
 
 class AuthIntegrationTest(TestCase):
@@ -154,7 +158,7 @@ class AuthIntegrationTest(TestCase):
         self.assertIn(response.status_code, [200, 302])
 
         # Check if the user is now logged in
-        self.assertIn('_auth_user_id', self.client.session)
+        self.assertIn("_auth_user_id", self.client.session)
 
     def test_logout(self):
         # Log in the user before testing logout
@@ -166,71 +170,94 @@ class AuthIntegrationTest(TestCase):
         # Check if the logout was successful (status code 200 or 302, depending on your setup)
         self.assertIn(response.status_code, [200, 302])
         # Check if the user is now logged out
-        self.assertNotIn('_auth_user_id', self.client.session)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
 
 class HomeViewTests(TestCase):
     def setUp(self):
         # Create test users and groups
-        self.user_returning_citizen = User.objects.create_user(username='rc_user', password='testpass')
-        self.user_parole_officer = User.objects.create_user(username='po_user', password='testpass')
-        self.user_mentor = User.objects.create_user(username='mentor_user', password='testpass')
+        self.user_returning_citizen = User.objects.create_user(
+            username="rc_user", password="testpass"
+        )
+        self.user_parole_officer = User.objects.create_user(
+            username="po_user", password="testpass"
+        )
+        self.user_mentor = User.objects.create_user(
+            username="mentor_user", password="testpass"
+        )
 
-        self.group_returning_citizen = Group.objects.create(name='Returning Citizen Role')
-        self.group_parole_officer = Group.objects.create(name='Parole Officer Role')
-        self.group_mentor = Group.objects.create(name='Mentor Role')
+        self.group_returning_citizen = Group.objects.create(
+            name="Returning Citizen Role"
+        )
+        self.group_parole_officer = Group.objects.create(name="Parole Officer Role")
+        self.group_mentor = Group.objects.create(name="Mentor Role")
 
         self.user_returning_citizen.groups.add(self.group_returning_citizen)
         self.user_parole_officer.groups.add(self.group_parole_officer)
         self.user_mentor.groups.add(self.group_mentor)
 
         # Create test model instances
-        self.returning_citizen = ReturningCitizen.objects.create(user=self.user_returning_citizen)
-        self.parole_officer = ParoleOfficer.objects.create(user=self.user_parole_officer)
+        self.returning_citizen = ReturningCitizen.objects.create(
+            user=self.user_returning_citizen
+        )
+        self.parole_officer = ParoleOfficer.objects.create(
+            user=self.user_parole_officer
+        )
         self.mentor = Mentor.objects.create(user=self.user_mentor)
 
     def test_authenticated_user_with_returning_citizen_role(self):
-        self.client.login(username='rc_user', password='testpass')
-        response = self.client.get(reverse('home'))
+        self.client.login(username="rc_user", password="testpass")
+        response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
-        self.assertContains(response, 'Welcome')
-        self.assertContains(response, 'Returning Citizen')
+        self.assertTemplateUsed(response, "home.html")
+        self.assertContains(response, "Welcome")
+        self.assertContains(response, "Returning Citizen")
 
     def test_authenticated_user_with_parole_officer_role(self):
-        self.client.login(username='po_user', password='testpass')
-        response = self.client.get(reverse('home'))
+        self.client.login(username="po_user", password="testpass")
+        response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
-        self.assertContains(response, 'Welcome')
-        self.assertContains(response, 'Parole Officer')
+        self.assertTemplateUsed(response, "home.html")
+        self.assertContains(response, "Welcome")
+        self.assertContains(response, "Parole Officer")
 
     def test_authenticated_user_with_mentor_role(self):
-        self.client.login(username='mentor_user', password='testpass')
-        response = self.client.get(reverse('home'))
+        self.client.login(username="mentor_user", password="testpass")
+        response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'home.html')
-        self.assertContains(response, 'Welcome')
-        self.assertContains(response, 'Mentor')
+        self.assertTemplateUsed(response, "home.html")
+        self.assertContains(response, "Welcome")
+        self.assertContains(response, "Mentor")
 
     def test_unauthenticated_user(self):
-        response = self.client.get(reverse('home'))
+        response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 302)  # Redirect to login page
 
 
 class DynamicQuestionnaireFormTest(TestCase):
     def setUp(self):
         # Create a test user
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.user_rc = User.objects.create_user(username='testuser2', password='testpassword2')
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword"
+        )
+        self.user_rc = User.objects.create_user(
+            username="testuser2", password="testpassword2"
+        )
 
         # Create a questionnaire and questions for testing
-        self.questionnaire = Questionnaire.objects.create(title='Test Questionnaire')
-        self.question1 = Question.objects.create(questionnaire=self.questionnaire, text='Question 1', order=1)
-        self.question2 = Question.objects.create(questionnaire=self.questionnaire, text='Question 2', order=2)
-        
+        self.questionnaire = Questionnaire.objects.create(title="Test Questionnaire")
+        self.question1 = Question.objects.create(
+            questionnaire=self.questionnaire, text="Question 1", order=1
+        )
+        self.question2 = Question.objects.create(
+            questionnaire=self.questionnaire, text="Question 2", order=2
+        )
+
         # Add the user to the 'Returning Citizen Role' group
-        returning_citizen_role, created = Group.objects.get_or_create(name='Returning Citizen Role')
-        mentor_role, created = Group.objects.get_or_create(name='Mentor Role')
+        returning_citizen_role, created = Group.objects.get_or_create(
+            name="Returning Citizen Role"
+        )
+        mentor_role, created = Group.objects.get_or_create(name="Mentor Role")
 
         self.user_rc.groups.add(returning_citizen_role)
         self.user.groups.add(mentor_role)
@@ -238,41 +265,41 @@ class DynamicQuestionnaireFormTest(TestCase):
         # Create a ReturningCitizen instance for self.user_rc
         self.returning_citizen_user_rc = ReturningCitizen.objects.create(
             user=self.user_rc,
-            first_name='Value1',  # Adjust fields based on your model structure
-            last_name='Value2',
+            first_name="Value1",  # Adjust fields based on your model structure
+            last_name="Value2",
         )
         care_team = self.returning_citizen_user_rc.care_team
 
         # Create a Mentor instance for self.user
         self.mentor_user = Mentor.objects.create(
             user=self.user,
-            last_name='Mentor Last Name',
+            last_name="Mentor Last Name",
         )
         self.mentor_user.care_teams.add(care_team.id)
 
         # Get or create a CareTeam associated with the returning_citizen_user_rc
-        
-
 
     def test_dynamic_questionnaire_form_submission(self):
         # Log in the test user
-        self.client.login(username='testuser', password='testpassword')
+        self.client.login(username="testuser", password="testpassword")
 
         # Create a dynamic form for the questionnaire
         DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
 
         # Prepare POST data with responses
         post_data = {
-            'care_team': self.returning_citizen_user_rc.care_team.id,
-            f'question_{self.question1.id}': 'Answer to question 1',
-            f'question_{self.question2.id}': 'Answer to question 2',
+            "care_team": self.returning_citizen_user_rc.care_team.id,
+            f"question_{self.question1.id}": "Answer to question 1",
+            f"question_{self.question2.id}": "Answer to question 2",
         }
 
         # Submit the form
-        response = self.client.post(reverse('display_questionnaire', args=[self.questionnaire.id]), post_data)
+        response = self.client.post(
+            reverse("display_questionnaire", args=[self.questionnaire.id]), post_data
+        )
 
         # Check if the form submission is successful and redirects to 'home'
-        #self.assertRedirects(response, reverse('home'))
+        # self.assertRedirects(response, reverse('home'))
 
         # Check if the UserResponse objects are created in the database
         self.assertEqual(UserResponse.objects.count(), 2)
@@ -281,16 +308,18 @@ class DynamicQuestionnaireFormTest(TestCase):
 
     def test_dynamic_questionnaire_form_display(self):
         # Log in the test user
-        self.client.login(username='testuser', password='testpassword')
+        self.client.login(username="testuser", password="testpassword")
 
         # Create a dynamic form for the questionnaire
         DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
 
         # Access the questionnaire display page
-        response = self.client.get(reverse('display_questionnaire', args=[self.questionnaire.id]))
+        response = self.client.get(
+            reverse("display_questionnaire", args=[self.questionnaire.id])
+        )
 
         # Check if the response status is 200 (OK)
         self.assertEqual(response.status_code, 200)
 
         # Check if the form is in the response context
-        self.assertIn('form', response.context)
+        self.assertIn("form", response.context)
