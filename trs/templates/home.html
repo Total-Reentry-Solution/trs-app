@@ -8,7 +8,20 @@
     {% if user|user_in_group:'Parole Officer Role' %}
       {% include 'po_landing.html' %}
     {% elif user|user_in_group:'Mentor Role' %}
-      {% include 'mentor_landing.html' %}
+      <h2> Welcome {{ model_instance.first_name }} {{ model_instance.last_name }}! </h2> 
+      <p> Here are the latest Mentor actions. </p>
+      {% if model_name == 'mentor' %}
+        <h2>Your Care Teams</h2>
+        {% if mentor_care_teams_data.care_teams %}
+          <ul>
+            {% for care_team in mentor_care_teams_data.care_teams %}
+              <li>{{ care_team.name }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No care teams found.</p>
+        {% endif %}      
+      {% endif %}  
     {% elif user|user_in_group:'Returning Citizen Role' %}
       {% include 'rc_landing.html' %}
     {% else %}
