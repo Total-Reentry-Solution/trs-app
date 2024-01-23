@@ -39,7 +39,6 @@ def is_mentor(user):
     return (
         user.is_authenticated
         and user.groups.filter(name="Mentor Role").exists()
-        and user.groups.count() == 1  # Ensure the user has only the specified group
     )
 
 
