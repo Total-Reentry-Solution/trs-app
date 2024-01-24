@@ -15,7 +15,11 @@
         {% if mentor_care_teams_data %}
           <ul>
             {% for rc in mentor_care_teams_data.care_teams %}
-              <li>{{ rc.returning_citizen_name }}</li>
+            <li>
+              <a href="{% url 'mentor_returning_citizen' care_team_id=rc.id %}">
+                {{ rc.returning_citizen_name }}
+              </a>
+            </li>
             {% endfor %}
           </ul>
         {% else %}

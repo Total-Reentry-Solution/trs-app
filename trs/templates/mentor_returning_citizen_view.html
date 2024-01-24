@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Returning Citizen View{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Returning Citizen Details</h2>
+    <p>Name: {{ returning_citizen.first_name }} {{ returning_citizen.last_name }}</p>
+    <!-- Add other details as needed -->
+</div>
+{% endblock %}

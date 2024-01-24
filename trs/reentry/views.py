@@ -9,8 +9,29 @@ from reentry.models import (
     Questionnaire,
     Question,
     UserResponse,
+    CareTeam,
 )
 from reentry.forms import create_dynamic_questionnaire_form
+from functools import wraps
+
+def has_care_team_access(model_class):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, care_team_id, *args, **kwargs):
+            try:
+                # Check if the logged-in user has access to the specified CareTeam
+                care_team = CareTeam.objects.get(id=care_team_id, **{f"{model_class.__name__.lower()}s__in": [model_class.objects.get(user=request.user)]})
+            except (CareTeam.DoesNotExist, model_class.DoesNotExist):
+                return HttpResponseForbidden("Access denied. You are not authorized to view this page.")
+
+            return view_func(request, care_team_id, *args, **kwargs)
+
+        return _wrapped_view
+
+    return decorator
+
+
+
 
 
 def get_model_for_group(user):
@@ -64,7 +85,8 @@ def get_mentor_care_teams(user):
 
         care_team_info = {
             "name": team.name,
-            "returning_citizen_name": f"{returning_citizen_user.first_name} {returning_citizen_user.last_name}" if returning_citizen_user else None
+            "returning_citizen_name": f"{returning_citizen_user.first_name} {returning_citizen_user.last_name}" if returning_citizen_user else None,
+            "id": team.id,
         }
 
         care_teams_data.append(care_team_info)
@@ -146,3 +168,18 @@ def display_questionnaire(request, questionnaire_id):
         "display_questionnaire.html",
         {"form": form, "questionnaire": questionnaire},
     )
+
+
+@login_required
+@has_care_team_access(Mentor)
+def mentor_returning_citizen_view(request, care_team_id):
+    care_team = get_object_or_404(CareTeam, id=care_team_id)
+
+    # Assuming there's a ForeignKey relationship from CareTeam to ReturningCitizen
+    returning_citizen = care_team.returningcitizen
+
+    context = {
+        'returning_citizen': returning_citizen,
+    }
+
+    return render(request, 'mentor_returning_citizen_view.html', context)

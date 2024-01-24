@@ -18,6 +18,8 @@ from .models import (
 
 from .forms import create_dynamic_questionnaire_form
 
+from .views import mentor_returning_citizen_view
+
 from django.urls import reverse
 
 
@@ -323,3 +325,48 @@ class DynamicQuestionnaireFormTest(TestCase):
 
         # Check if the form is in the response context
         self.assertIn("form", response.context)
+
+
+class MentorReturningCitizenViewTest(TestCase):
+    def setUp(self):
+        # Create test users
+        self.mentor_user = User.objects.create_user(username='mentoruser', password='mentorpass')
+        self.returning_citizen_user = User.objects.create_user(username='citizenuser', password='citizenpass')
+        self.returning_citizen = ReturningCitizen.objects.create(
+            user=self.returning_citizen_user,
+            first_name="Value1",  # Adjust fields based on your model structure
+            last_name="Value2",
+        )
+
+        self.mentor = Mentor.objects.create(
+            user=self.mentor_user,
+            first_name="Mentor First Name",
+            last_name="Mentor Last Name",
+        )
+        
+        care_team = self.returning_citizen.care_team
+
+        self.mentor.care_teams.add(care_team.id)
+
+
+        self.mentor.care_teams.add(care_team)
+
+        # Set up the client with the logged-in mentor user
+        self.client = Client()
+        self.client.login(username='mentoruser', password='mentorpass')
+
+    def test_mentor_returning_citizen_view(self):
+        # URL for the mentor_returning_citizen_view
+        url = reverse('mentor_returning_citizen', args=[self.returning_citizen.care_team.id])
+
+        # Make a GET request to the view
+        response = self.client.get(url)
+
+        # Check if the response status code is 200 (OK)
+        self.assertEqual(response.status_code, 200)
+
+        # Check if the returning_citizen is in the context
+        self.assertIn('returning_citizen', response.context)
+
+        # Check if the correct template is being used
+        self.assertTemplateUsed(response, 'mentor_returning_citizen_view.html')

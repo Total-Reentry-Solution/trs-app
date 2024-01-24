@@ -31,6 +31,7 @@ urlpatterns = [
         views.display_questionnaire,
         name="display_questionnaire",
     ),
+    path('mentor_returning_citizen/<int:care_team_id>/', views.mentor_returning_citizen_view, name='mentor_returning_citizen'),
 ]
 
 admin.site.site_header = "Total Reentry Solution Admin"
