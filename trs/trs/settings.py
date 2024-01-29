@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    #"reentry",
     "reentry",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -128,6 +129,6 @@ GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
 }
-
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "/"

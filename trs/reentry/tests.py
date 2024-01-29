@@ -1,4 +1,5 @@
-from django.test import TestCase, Client
+from trs.settings import *
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User, Group
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
@@ -23,6 +24,12 @@ from .views import mentor_returning_citizen_view
 from django.urls import reverse
 
 
+@override_settings(MIDDLEWARE=[
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # ... other middleware ...
+])
 class ModelTestCase(TestCase):
     def setUp(self):
         # Create a user for testing
@@ -151,28 +158,37 @@ class AuthIntegrationTest(TestCase):
         self.client = Client()
 
     def test_login(self):
-        # Simulate a login request
-        response = self.client.post(
-            "/accounts/login/", {"username": "testuser", "password": "testpassword"}
-        )
+         with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
+            # Simulate a login request
+            response = self.client.post(
+                "/accounts/login/", {"username": "testuser", "password": "testpassword"}
+            )
 
-        # Check if the login was successful (status code 200 or 302, depending on your setup)
-        self.assertIn(response.status_code, [200, 302])
+            # Check if the login was successful (status code 200 or 302, depending on your setup)
+            self.assertIn(response.status_code, [200, 302])
 
-        # Check if the user is now logged in
-        self.assertIn("_auth_user_id", self.client.session)
+            # Check if the user is now logged in
+            self.assertIn("_auth_user_id", self.client.session)
+
+            # Check if the success message is displayed
+            #self.assertContains(response, "Welcome! You have successfully logged in.")
 
     def test_logout(self):
-        # Log in the user before testing logout
-        self.client.login(username="testuser", password="testpassword")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
 
-        # Simulate a logout request
-        response = self.client.post("/accounts/logout/")
+            # Log in the user before testing logout
+            self.client.post(
+                "/accounts/login/", {"username": "testuser", "password": "testpassword"}
+            )
 
-        # Check if the logout was successful (status code 200 or 302, depending on your setup)
-        self.assertIn(response.status_code, [200, 302])
-        # Check if the user is now logged out
-        self.assertNotIn("_auth_user_id", self.client.session)
+
+            # Simulate a logout request
+            response = self.client.post("/accounts/logout/")
+
+            # Check if the logout was successful (status code 200 or 302, depending on your setup)
+            self.assertIn(response.status_code, [200, 302])
+            # Check if the user is now logged out
+            self.assertNotIn("_auth_user_id", self.client.session)
 
 
 class HomeViewTests(TestCase):
@@ -208,28 +224,46 @@ class HomeViewTests(TestCase):
         self.mentor = Mentor.objects.create(user=self.user_mentor)
 
     def test_authenticated_user_with_returning_citizen_role(self):
-        self.client.login(username="rc_user", password="testpass")
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "home.html")
-        self.assertContains(response, "Welcome")
-        self.assertContains(response, "Returning Citizen")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
+
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "rc_user", "password": "testpass"}
+            )
+
+            response = self.client.get(reverse("home"))
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "home.html")
+            self.assertContains(response, "Welcome")
+            self.assertContains(response, "Returning Citizen")
 
     def test_authenticated_user_with_parole_officer_role(self):
-        self.client.login(username="po_user", password="testpass")
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "home.html")
-        self.assertContains(response, "Welcome")
-        self.assertContains(response, "Parole Officer")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
+
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "po_user", "password": "testpass"}
+            )
+
+            response = self.client.get(reverse("home"))
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "home.html")
+            self.assertContains(response, "Welcome")
+            self.assertContains(response, "Parole Officer")
 
     def test_authenticated_user_with_mentor_role(self):
-        self.client.login(username="mentor_user", password="testpass")
-        response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "home.html")
-        self.assertContains(response, "Welcome")
-        self.assertContains(response, "Mentor")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
+
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "mentor_user", "password": "testpass"}
+            )
+
+            response = self.client.get(reverse("home"))
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "home.html")
+            self.assertContains(response, "Welcome")
+            self.assertContains(response, "Mentor")
 
     def test_unauthenticated_user(self):
         response = self.client.get(reverse("home"))
@@ -282,78 +316,92 @@ class DynamicQuestionnaireFormTest(TestCase):
         # Get or create a CareTeam associated with the returning_citizen_user_rc
 
     def test_dynamic_questionnaire_form_submission(self):
-        # Log in the test user
-        self.client.login(username="testuser", password="testpassword")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
 
-        # Create a dynamic form for the questionnaire
-        DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "testuser", "password": "testpassword"}
+            )
 
-        # Prepare POST data with responses
-        post_data = {
-            "care_team": self.returning_citizen_user_rc.care_team.id,
-            f"question_{self.question1.id}": "Answer to question 1",
-            f"question_{self.question2.id}": "Answer to question 2",
-        }
+            # Create a dynamic form for the questionnaire
+            DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
 
-        # Submit the form
-        response = self.client.post(
-            reverse("display_questionnaire", args=[self.questionnaire.id]), post_data
-        )
+            # Prepare POST data with responses
+            post_data = {
+                "care_team": self.returning_citizen_user_rc.care_team.id,
+                f"question_{self.question1.id}": "Answer to question 1",
+                f"question_{self.question2.id}": "Answer to question 2",
+            }
 
-        # Check if the form submission is successful and redirects to 'home'
-        # self.assertRedirects(response, reverse('home'))
+            # Submit the form
+            response = self.client.post(
+                reverse("display_questionnaire", args=[self.questionnaire.id]), post_data
+            )
 
-        # Check if the UserResponse objects are created in the database
-        self.assertEqual(UserResponse.objects.count(), 2)
+            # Check if the form submission is successful and redirects to 'home'
+            # self.assertRedirects(response, reverse('home'))
 
-        # You can add more assertions based on your specific requirements
+            # Check if the UserResponse objects are created in the database
+            self.assertEqual(UserResponse.objects.count(), 2)
+
+            # You can add more assertions based on your specific requirements
 
     def test_dynamic_questionnaire_form_display(self):
-        # Log in the test user
-        self.client.login(username="testuser", password="testpassword")
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
 
-        # Create a dynamic form for the questionnaire
-        DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "testuser", "password": "testpassword"}
+            )
 
-        # Access the questionnaire display page
-        response = self.client.get(
-            reverse("display_questionnaire", args=[self.questionnaire.id])
-        )
+            # Create a dynamic form for the questionnaire
+            DynamicQuestionnaireForm = create_dynamic_questionnaire_form(self.questionnaire)
 
-        # Check if the response status is 200 (OK)
-        self.assertEqual(response.status_code, 200)
+            # Access the questionnaire display page
+            response = self.client.get(
+                reverse("display_questionnaire", args=[self.questionnaire.id])
+            )
 
-        # Check if the form is in the response context
-        self.assertIn("form", response.context)
+            # Check if the response status is 200 (OK)
+            self.assertEqual(response.status_code, 200)
+
+            # Check if the form is in the response context
+            self.assertIn("form", response.context)
 
 
 class MentorReturningCitizenViewTest(TestCase):
     def setUp(self):
+        with self.settings(MESSAGE_STORAGE='django.contrib.messages.storage.session.SessionStorage'):
+
+
         # Create test users
-        self.mentor_user = User.objects.create_user(username='mentoruser', password='mentorpass')
-        self.returning_citizen_user = User.objects.create_user(username='citizenuser', password='citizenpass')
-        self.returning_citizen = ReturningCitizen.objects.create(
-            user=self.returning_citizen_user,
-            first_name="Value1",  # Adjust fields based on your model structure
-            last_name="Value2",
-        )
+            self.mentor_user = User.objects.create_user(username='mentoruser', password='mentorpass')
+            self.returning_citizen_user = User.objects.create_user(username='citizenuser', password='citizenpass')
+            self.returning_citizen = ReturningCitizen.objects.create(
+                user=self.returning_citizen_user,
+                first_name="Value1",  # Adjust fields based on your model structure
+                last_name="Value2",
+            )
 
-        self.mentor = Mentor.objects.create(
-            user=self.mentor_user,
-            first_name="Mentor First Name",
-            last_name="Mentor Last Name",
-        )
-        
-        care_team = self.returning_citizen.care_team
+            self.mentor = Mentor.objects.create(
+                user=self.mentor_user,
+                first_name="Mentor First Name",
+                last_name="Mentor Last Name",
+            )
+            
+            care_team = self.returning_citizen.care_team
 
-        self.mentor.care_teams.add(care_team.id)
+            self.mentor.care_teams.add(care_team.id)
 
 
-        self.mentor.care_teams.add(care_team)
+            self.mentor.care_teams.add(care_team)
 
-        # Set up the client with the logged-in mentor user
-        self.client = Client()
-        self.client.login(username='mentoruser', password='mentorpass')
+            # Set up the client with the logged-in mentor user
+            self.client = Client()
+            # Log in the test user
+            self.client.post(
+                "/accounts/login/", {"username": "mentoruser", "password": "mentorpass"}
+            )
 
     def test_mentor_returning_citizen_view(self):
         # URL for the mentor_returning_citizen_view

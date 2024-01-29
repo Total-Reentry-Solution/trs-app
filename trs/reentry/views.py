@@ -11,6 +11,7 @@ from reentry.models import (
     UserResponse,
     CareTeam,
 )
+from django.contrib import messages
 from reentry.forms import create_dynamic_questionnaire_form
 from functools import wraps
 
@@ -101,7 +102,6 @@ def home(request):
     try:
         model_instance = group_mapping["model"].objects.get(user=request.user)
         model_name = group_mapping["model"].__name__.lower()
-
         if model_name == "mentor":
             # Call the function to get mentor care teams data
             mentor_care_teams_data = get_mentor_care_teams(request.user)
@@ -115,7 +115,6 @@ def home(request):
                     "mentor_care_teams_data": mentor_care_teams_data,
                 },
             )
-
         return render(
             request,
             "home.html",
