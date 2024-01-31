@@ -1,14 +1,44 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% comment %} <div class="container">
+    <h1>{{ questionnaire.title }}</h1>
+    <p>{{ questionnaire.description }}</p>
+
+    <form method="post" action="" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+</div> {% endcomment %}
 <div class="container">
     <h1>{{ questionnaire.title }}</h1>
     <p>{{ questionnaire.description }}</p>
 
-    <form method="post" action="">
+    <form method="post" action="" class="needs-validation" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Submit">
+
+        {% for field in form %}
+            <div class="form-group">
+                {% if field.field.widget.input_type == 'text' %}
+                    {{ field.label_tag }}
+                    <input type="text" class="form-control" id="{{ field.id_for_label }}" name="{{ field.name }}" value="{{ field.value|default:'' }}" {% if field.required %}required{% endif %}>
+                {% else %}
+                    {{ field }}
+                {% endif %}
+
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button class="btn btn-primary" type="submit">Submit</button>
     </form>
 </div>
+
 {% endblock %}

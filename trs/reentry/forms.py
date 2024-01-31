@@ -35,7 +35,7 @@ def create_dynamic_questionnaire_form(questionnaire, user=None):
     for question in questions:
         field_name = f"question_{question.id}"
         question_fields[field_name] = forms.CharField(
-            label=question.text, required=True, widget=forms.Textarea
+            label=question.text, required=True
         )
 
     # Add the care_team field to the dynamic form and pass the current user to the form if provided
@@ -43,7 +43,7 @@ def create_dynamic_questionnaire_form(questionnaire, user=None):
         question_fields["care_team"] = forms.ModelChoiceField(
             queryset=user.mentor.care_teams.all(),
             label="Select Care Team",
-            required=False,
+            required=True,
             empty_label="Select Care Team",
         )
 
