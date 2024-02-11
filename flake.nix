@@ -42,6 +42,7 @@
           # A hook run every time you enter the environment
           shellHook = ''
             TEST="test"
+            source .venv/bin/activate
           '';
         };
       });
